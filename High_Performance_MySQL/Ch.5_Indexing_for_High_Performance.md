@@ -36,7 +36,7 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
   ![B-Tree](./files/B+Tree.png)
 
 * B-Tree 예시
-  - index를 last_name, first_name, dob column을 이용항 만들기
+  - index를 last_name, first_name, dob column을 이용하여 만들기
 
   ```sql
   CREATE TABLE People (
