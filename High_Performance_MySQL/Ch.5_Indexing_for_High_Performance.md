@@ -144,4 +144,123 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
 * ```MATCH AGAINST``` operation을 사용하여 검색
 
 ## Benefits of Indexes
+* B-Tree Index는 정렬되어 있어 비슷한 값들이 인접해 있기 때문에 ```ORDER BY``` 나 ```GROUP BY```에도 효과적임.
+* Index의 Benefits
+  - Index는 서버가 확인해야 할 데이터 양을 줄여준다.
+  - Index는 서버가 sorting 및 temporary table을 추가로 사용하지 않도록 한다.
+  - Index는 random I/O를 sequential I/O로 접근할 수 있도록 한다.
+* Three-star system for index
+  - one star: index가 관련된 rows를 각각 인접하게 위치
+  - second star: index가 rows를 query에서 필요한 순서로 sorted 되어 있음
+  - final star: index에 query에 필요한 모든 column이 포함되어 있음 
+* Is an Index the Best Solution?
+  - 매우 큰 table에서는 index를 생성하는 작업 자체가 overhead가 발생할 수 있으므로, row를 group으로 나누어 partitioning을 사용하는 것이 효과적일 수 있다. 
+
+## Indexing Strategies for High Performance
+* 효과적인 index를 선택하는 방법 및 Performance를 평가하는 방법
+
+### Isolating the Column
+* Column들이 isolated 되지 않으면 index를 사용할 수 없음.
+  - Isolating: column이 expression의 부분이 아니고, function의 내부에 없는 경우
+
+  ```sql
+  -- mistakes
+  SELECT actor_id FROM sakila.actor WHERE actor_id + 1 = 5;
+  SELECT ... WHERE TO_DAYS(CURRENT_DATE) - TO_DAYS(date_col) <= 10;
+  ```
+
+### Prefix Indexes and Index Selectivity
+* Prefix Indexes
+  - 매우 긴 character columns를 index할 경우 index가 매우 커지고, 느리는 문제점
+  - 전체 대신 Column의 앞부분만을 index 하여 속도 향상 및 적은 공간을 사용하도록 함 (less selective하게 됨)
+  - 적절한 index selectivity를 보장할 수 있을 만큼 prefix의 길이를 정함
+  - Prefix size를 찾는 방법
+    - prefix size를 증가 시키면서 column의 전체 사이즈와 유사한 Index Selectivity를 가지는, 다시 말해서 가장 많이 나타나는 값의 count가 유사하도록 설정
+    - average selectivity외에 worst-case selectivity도 중요함
+
+    ```sql
+    SELECT COUNT(*) AS cnt, LEFT(city, 3) AS pref FROM sakila.city_demo GROUP BY pref ORDER BY cnt DESC LIMIT 10;
+
+    -- prefix average selectivity
+    SELECT COUNT(DISTINCT city)/COUNT(*) FROM sakila.city_demo;
+    ```
+  - Prefix index 만들기 
+
+    ```sql
+    ALTER TABLE sakila.city_demo ADD KEY (city(7));
+    ```
+  - 단점: MySQL에서는 ```ORDER BY```나 ```GROUP```에 prefix index를 사용하지 못하고, covering index로도 사용하지 못함
+
+* Index Selectivity (1/#T ~ 1)
+  - the ratio of the number of distinct indexed values(the cardinality) to the total number of rows in the table(#T)
+  - unique index: selectivity is 1
+  - index selectivity가 높은 것이 좋음
+* Suffix index: MySQL에서는 지원하지 않음, reversed string을 저장하고, prefix index를 사용하여 구현할 수 있음.
+
+### Multicolumn Indexes
+* Multicolumn Indexes시 mistakes
+  - 너무 많은 column이나 모든 column을 각각 index: Performance 향상에 도움이 되지 않음
+  - column을 잘못된 순서로 index
+  
+    ```sql
+    CREATE TABLE t (
+      c1 INT,
+      c2 INT, 
+      c3 INT,
+      KEY(c1),
+      KEY(c2),
+      KEY(c3)
+    );
+    ```
+
+* index merge 기능으로 MySQL에서는 하나의 테이블에서 multiple index를 제한적으로 사용하게 함: CPU, Memory를 과다하게 사용
+  - MySQL에서는 index merge를 이용하는 3가지 경우가 있음
+    - union for ```OR``` conditions
+      - Extra column을 이용함. buffering, sorting, index merging에 많은 자원을 사용하게 됨
+    - intersection for ```AND``` conditions
+      - 모든 column에 관련 있는 하나의 index를 사용하는 것이 더 나음.
+    - unions of intersections for combinations of the twoㅌ
+  - ```IGNORE INDEX```로 index merge를 disable 할 수 있음
+
+    ```sql
+    -- film_actor, film_id 모두에 index가 있음
+    SELECT film_id, actor_id FROM sakila.film_actor
+    WHERE actor_id = 1 OR film_id = 1;
+    ```
+
+### Choosing a Good Column Order
+* Multicolumn index: the order of columns in an index
+* B-Tree Index를 사용할 경우 columns의 index order를 row가 어떻게 sorted 되고 grouped 될지에 고려해야 함. ```ORDER BY```, ```GROUP BY```, ```DISTINCT```
+* Index column order를 결정 방법
+  - 가장 selective column이 first
+    - sorting이나 grouping이 없는 경우는 효과적
+    - 어떤 경우에서는 random I/O와 sorting을 고려하는 것이 더 효과적임
+  - Higer selectivity한 column을 index의 first column으로 선택
+    - pt-query-digest에서 worst sample query를 기준으로 하면 효과적임
+    - 모든 average-case performance가 special-case performance에 해당 될 수 는 없음
+
+    ```sql
+    -- higher selectivity한 column을 first index (적은 row를 리턴) 
+    SELECT * FROM payment WHERE staff_id = 2 AND customer_id = 584;
+
+    -- 특정 조건에 따라 selectivity는 다를 수 있음
+    SELECT SUM(staff_id = 2), SUM(customer_id = 584) FROM payment\G
+    -- SUM(staff_id = 2): 7992
+    -- SUM(customer_id = 584): 30 (customer_id) => first in the index
+
+    -- caridnaliy 직접 구해서 판단
+    SELECT COUNT(DISTINCT staff_id)/COUNT(*) AS staff_id_selectivity,
+    COUNT(DISTINCT customer_id)/COUNT(*) AS customer_id_selectivity,
+    COUNT(*)
+    FROM payment\G
+    --    staff_id_selectivity: 0.0001
+    -- customer_id_selectivity: 0.0373 <- higer selectivity, first column index
+    --                COUNT(*): 16049
+
+    ALTER TABLE payment ADD KEY(customer_id, staff_id);
+    ```
+* selectivity와 cadinality 뿐만 아니라, sorting, grouping, WHERE 안의 range condition도 query performace에 큰 영향을 미침
+
+### Clusterd Indexes
 * 
+
