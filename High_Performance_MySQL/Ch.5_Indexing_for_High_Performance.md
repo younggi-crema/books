@@ -11,7 +11,7 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
 ```
 
 * index는 테이블에 있는 하나 또는 여러개의 column의 value로 만들어 짐.
-  - 여러 개의 column을 사용할 경우 순서가 중요함 (MySQL은 leftmost prefix로 효과적 검색)
+  - 여러 개의 column을 사용할 경우 순서가 중요함 (MySQL은 leftmost prefix 검색)
 
 * ORM을 사용할 경우도 index는 중요하다. primary key를 사용한 lookup을 사용하지 않을 경우 ORM도 적절한 Query를 만들지 못하는 경우가 발생할 수 있다. 
 
@@ -25,7 +25,11 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
 * CREAT TABLE, CREATE INDEX 등을 사용하여 index 생성시 타입 지정
 *  B-Tree를 지정하더라도, storage engine에서 내부적 구현의 차이 존재
   - Ex) NDB Cluster Engine: 네트워크 데이터 분산 지원 스토리지 엔진, [T-Tree](https://en.wikipedia.org/wiki/T-tree) 사용 
+    - T-Tree: AVL-Tree의 이진 탐색 특성 및 높이 균형과 B-Tree의 업데이트와 저장 효율(한 노드에 여러개의 데이터를 가짐)을 가지는 메모리 기반의 DBMS에서 주로 사용되는 index algorithm
   - Ex) InnoDB: [B+Tree](https://en.wikipedia.org/wiki/B%2B_tree) 사용
+* B Tree vs B+ Tree
+  - B+ Tree: 중간 node에 key만 있고, value pair를 포함하지 않음
+  - B+ Tree: Leaf nodes간 linked 되어 있어, 순차적으로 탐색하기 용이함 
 * B-Tree index
   - root node에서 시작, root node의 slot에는 child node의 pointer를 가지고 있음 (upper/lower bounds)
   - 각 leaf page가 root node로 부터 같은 거리에 있음
@@ -62,7 +66,7 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
 * B Tree index의 장점: 정렬이 되어 있기 때문에 값을 찾거나 ORDER BY query에 강점.
 * B Tree index의 limitations (**index를 구성하는 column의 순서**)
   - indexed column의 leftmost side로 시작되지 않는 검색에는 불리함
-  - index를 구성하는 column들을 제외하고 검색할 수 없음. (last_name과 dob만 이용하여 검색할 경우 dob는 index를 이용하지 못함)
+  - index를 구성하는 column들의 순서 일부를 제외하고 검색할 수 없음. (last_name과 dob만 이용하여 검색할 경우 dob는 first_name을 사용하지 않을 경우 index를 이용하지 못함)
   - range condition의 다음에 오는 조건은 index를 이용하지 못함 (WHERE last_name="Smith" AND first_name LIKE 'J%' AND dob='1976-12-23')
 * 성능 최적화를 위해 같은 column들을 가지고 서로 다른 순서로 index를 만들기도 함.
 
@@ -102,7 +106,7 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
   
   ```sql
   SELECT id FROM url WHERE url="http://www.mysql.com";
-
+  -- hash value가 동일할 수 있으므로, 원래 값과 함께 검색한다.
   SELECT id FROM url WHERE url="http://www.mysql.com" AND url_crc=CRC32("http://www.mysql.com");
   ```
 
@@ -219,20 +223,21 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
       - Extra column을 이용함. buffering, sorting, index merging에 많은 자원을 사용하게 됨
     - intersection for ```AND``` conditions
       - 모든 column에 관련 있는 하나의 index를 사용하는 것이 더 나음.
-    - unions of intersections for combinations of the twoㅌ
-  - ```IGNORE INDEX```로 index merge를 disable 할 수 있음
+    - unions of intersections for combinations of the two
 
     ```sql
     -- film_actor, film_id 모두에 index가 있음
     SELECT film_id, actor_id FROM sakila.film_actor
     WHERE actor_id = 1 OR film_id = 1;
     ```
+    
+  - ```IGNORE INDEX```로 index merge를 disable 할 수 있음
 
 ### Choosing a Good Column Order
 * Multicolumn index: the order of columns in an index
 * B-Tree Index를 사용할 경우 columns의 index order를 row가 어떻게 sorted 되고 grouped 될지에 고려해야 함. ```ORDER BY```, ```GROUP BY```, ```DISTINCT```
 * Index column order를 결정 방법
-  - 가장 selective column이 first
+  - 대체적으로 selective column(high selectivity)을 선택
     - sorting이나 grouping이 없는 경우는 효과적
     - 어떤 경우에서는 random I/O와 sorting을 고려하는 것이 더 효과적임
   - Higer selectivity한 column을 index의 first column으로 선택
@@ -248,7 +253,7 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
     -- SUM(staff_id = 2): 7992
     -- SUM(customer_id = 584): 30 (customer_id) => first in the index
 
-    -- caridnaliy 직접 구해서 판단
+    -- cardinality 직접 구해서 판단
     SELECT COUNT(DISTINCT staff_id)/COUNT(*) AS staff_id_selectivity,
     COUNT(DISTINCT customer_id)/COUNT(*) AS customer_id_selectivity,
     COUNT(*)
@@ -265,11 +270,10 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
 * Clustered indexes: index의 type이 아니라 data storage에 대한 접근 방식
   - InnoDB의 index는 B-Tree index와 rows를 함께 같은 structure에 저장 (I/O 개선)
   - InnoDB의 경우 primary key에 대해서 clustered index를 적용함
-    - primary key를 지정하지 않을 경우, 다른 unique nonnullable index를 사용하려고 하고, 그것 마져 없는 경우 hidden primary key를 만들어 cluster 한다.
+    - primary key를 지정하지 않을 경우, 다른 unique nonnullable index를 사용하려고 하고, 그것도 없는 경우 hidden primary key를 만들어 cluster 한다.
   - Table에 하나만 지정될 수 있음
   - Row가 index의 leaf pages에 저장되어, rows가 index column의 순으로 정렬되어 인접하게 저장된다.
   - Performance에 도움을 줄 수 있지만 때로는 Performance에 문제도 발생시킬 수 있음
-    - ?
 
   ![Clustered Index](./files/Clustered_Index.png)
 
@@ -291,7 +295,7 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
   - primary and secondary indexes
   
   ```sql
-  -- primary key values 1 to 10000
+  -- primary key values col1 1 to 10000
   -- col2 between 1 and 100
   CREATE TABLE layout_test (
     col1 int NOT NULL,
