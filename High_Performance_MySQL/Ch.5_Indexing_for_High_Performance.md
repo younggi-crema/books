@@ -262,5 +262,89 @@ SELECT first_name FROM sakila.actor WHERE actor_id = 5;
 * selectivity와 cadinality 뿐만 아니라, sorting, grouping, WHERE 안의 range condition도 query performace에 큰 영향을 미침
 
 ### Clusterd Indexes
-* 
+* Clustered indexes: index의 type이 아니라 data storage에 대한 접근 방식
+  - InnoDB의 index는 B-Tree index와 rows를 함께 같은 structure에 저장 (I/O 개선)
+  - InnoDB의 경우 primary key에 대해서 clustered index를 적용함
+    - primary key를 지정하지 않을 경우, 다른 unique nonnullable index를 사용하려고 하고, 그것 마져 없는 경우 hidden primary key를 만들어 cluster 한다.
+  - Table에 하나만 지정될 수 있음
+  - Row가 index의 leaf pages에 저장되어, rows가 index column의 순으로 정렬되어 인접하게 저장된다.
+  - Performance에 도움을 줄 수 있지만 때로는 Performance에 문제도 발생시킬 수 있음
+    - ?
 
+  ![Clustered Index](./files/Clustered_Index.png)
+
+  - Clustered index의 advantages
+    - 연관된 데이터를 함께 읽고, 저장할 수 있다.
+    - Data access가 빠르다.
+    - Covering index를 사용하는 Query의 경우 leaf node의 primary key 값을 사용할 수 있다. 
+  - Clustered index의 disadvantages
+    - Clustering은 I/O 개선에 큰 영향을 주나, data가 memory에 충분히 적재될 경우 장점이 두드러지지 않음
+    - Insert 속도는 insertion order에 영향을 많이 받음. primary key order로 insert 할 경우가 가장 빠름 (```OPTIMIZE TABLE```을 사용하여 재 정렬)
+    - Clustered index column을 update하는 것은 비용이 과다함 (InnoDB의 경우 새로운 위치에 이동 생성)
+    - Table에 Row가 insert되거나 update 될 경우 page splits가 발생하면, row는 모두 하나의 page내에 위치해야 하므로, 추가로 page가 생성되어 disk space를 좀 더 사용하게 된다.
+    - Table full scan시 page split으로 rows가 less densely packed 되거나 nonsequentially 할 경우 느려짐
+    - Secondary (nonclustered) index는 primary key column을 reference로 추가로 저장해야 하기 때문에 커질 수 있음 (row pointer는 변경될 수 있기 때문에 reference로 사용될 수 없음)
+    - Secondary index는 데이터를 access하기 위해서 clustered index를 추가로 access 해야함
+
+#### Comparison of InnoDB and MyISAM data layout
+* clustered and nonclustered data layouts
+  - primary and secondary indexes
+  
+  ```sql
+  -- primary key values 1 to 10000
+  -- col2 between 1 and 100
+  CREATE TABLE layout_test (
+    col1 int NOT NULL,
+    col2 int NOT NULL,
+    PRIMARY KEY(col1), 
+    KEY(col2)
+  );
+  ```
+
+* MyISAM's data layout
+  - Rows를 disk에 insert된 순서로 저장
+  - 별도의 row number를 유지, row를 fixed length로 하여 row number 계산
+  - leaf nodes에는 row number와 해당 column 값만 저장한다. 
+  - 다른 column(col2)의 index도 동일한 방식으로 저장됨
+
+  ![MyISAM data layout](./files/MyISAM_datalayout.png)
+  
+* InnoDB's data layout
+  - Rows를 Clustered 된 형태로 저장
+  - 전체 row가 Clustered index의 leaf node에 저장됨 (Clustered index = table)
+  - Secondary Index의 leaf node에는 primary key values가 저장됨
+
+  ![InnoDB's primay key layout](./files/InnoDB_primary_key_layout.png)
+
+  ![InnoDB's secondary index](./files/InnoDB_secondary_index.png)
+
+  ![InnoDB vs MyISAM tables layout](./files/InnoDB_vs_MyISAM_index_structures.png)
+
+* Inserting rows in primary key order with InnoDB
+  - surrogate key
+    - application data에 관계되지 않는 value의 primary key
+    - InnoDB를 사용하고, 특별히 clustering이 필요하지 않는 경우
+    - ```AUTO_INCREMENT``` column을 사용
+    - random한 primary key를 사용하는 것인 I/O bound workloads에 좋지 않음
+      - ex: UUID
+      - clutered index를 random하게 insert하게 만드는 최악의 경우가 발생할 수 있음
+    
+    ![Benchmark results for inserting rows](./files/Benchmark_result_insert.png)
+
+  - Inserting sequential primary key values
+    - primary key pages are packed nearly full with in-ordered records
+
+  ![Insert sequential primary key values](./files/insert_seq_primary.png)
+
+  - Inserting random primary key values
+    - primary key value를 existing data의 중간에 넣기 위한 추가 작업이 소요됨
+    - drawbacks
+      - Destination page가 disk에 flush되고, cache가 removed 됨. Disk I/O 증가
+      - Insertion이 순서 없이 되므로, 공간을 확보하기 위해 자주 page split가 일어남
+      - final data is fragmented
+
+  ![Insert random primary key values](./files/insert_random_primary.png)
+
+* When Primary Key Order Is Worse
+  - High-concurrency workloads에서 primary key insert가 경합 및 AUTO_INCREMENT lock이 성능에 영향을 미치게 됨
+  - [innodb_autoinc_lock_mode](https://mariadb.com/kb/en/library/auto_increment-handling-in-xtradbinnodb/) 설정을 조정한다.
