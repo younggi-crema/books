@@ -4,7 +4,7 @@
     - method name을 명확하게
   - Add or Remove parameters
     - parmeter 수를 줄임
-  - Method body를 명료하게 변경
+  - Method body나 역할을 명료하게 변경
 
 ## Rename Method
 * Method name이 purpose를 표현하지 못하는 경우
@@ -25,16 +25,16 @@
 * Method가 caller로 부터 더 많은 정보가 필요한 경우
   - *다른 대안이 있는지 먼저 확인할 필요가 있음*
   - Long Parameters list는 기억하기 어렵고, data clumps(구분 되지 않은 데이터가 나열)를 유발
-* Mechanics
-  - Ruby는 method overloading을 지원하지 않기 때문에 새로운 method를 테스트 후 기존 method와 이름을 서로 변경
 
 ## Remove Parameter
 * Parameter가 method body에서 더 이상 사용되지 않는 경우
   - 사용되지 않는 parameter를 삭제한다
+* Mechanics
+  - Ruby는 method overloading을 지원하지 않기 때문에 새로운 method를 테스트 후 기존 method와 이름을 서로 변경
 
 
 ## Separate Query from Modifier
-* Method가 value를 return하고(Query), object의 state를 change(Modifier)하는 경우
+* Method가 value를 return하고(Query), object의 state를 change(Modifier)를 함께 하는 경우
   - value를 알기 위해 원하는 만큼 호출 가능해 지도록, 상태가 변경되는 side effect가 없는 method를 만든다
   - method를 명료하게
   - 두 method로 분리
@@ -72,7 +72,7 @@
   - parameter를 삭제하고 method를 receiver가 parameter를 구하는 method를 내부에서 invoke한다.
   - parameter 수를 줄임
 
-## Introduct Parameter Object
+## Introduce Parameter Object
 * 같이 다루는 parameter들의 group이 있는 경우
   - parameter들을 새로운 object(immutable)로 바꾼다.
   - parameter 수를 줄임
