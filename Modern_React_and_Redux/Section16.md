@@ -51,7 +51,15 @@
 
 ## How to *Not* Navigate with React Router
 * anchor tag를 이용한 react router 간 이동
-  - **BAD!!**: 클릭하여 페이지 이동시 마다 페이지를 서버에서 받아와 이전 html을 없애고 새로 App을 로딩하게 됨
+  - **BAD!!**: 클릭하여 페이지 이동시 마다 페이지를 서버에서 받아와 이전 html을 없애고 새로 App을 로딩하게 됨 (기존에 react가 가지고 있던 데이터는 모두 삭제됨)
   ```html
   <a href='/'>Navigate to Page One</a>
   ```
+
+## Navigating with React Router
+* `Link`
+  - html anchor tag 대신 React에서 사용
+  - React App 내에서 route되고, 서버로 새로운 요청이 발생하지 않음
+* 동작 방식
+  - html은 anchor tag로 rendering 되나, 클릭 시 React Router가 browser가 서버에 새로운 페이지를 호출하는 것을 막음
+  - URL은 변경되나, `History`에서 update URL을 `BrowserRouter`로 보내어 해당하는 `Route` component를 실행하게 함
