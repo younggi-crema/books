@@ -27,3 +27,24 @@
 ## How React Router Works
 * React Router
   ![React Router](./images/router.png)
+
+## How Paths Get Matched
+* Path match 방식
+  - path에 match하는 component는 모두 rendering 됨
+  - `extractedPath.contains(path)`
+* Duplicate PageOne Route
+  ```html
+  <BrowserRouter>
+    <div>
+      <Route path="/" exact component={PageOne} />
+      <Route path="/" exact component={PageOne} />
+  ```
+* `/pagetwo` PageOne, PageTwo 모두 출력
+  ```html
+  <BrowserRouter>
+    <div>
+      <Route path="/" component={PageOne} />
+      <Route path="/pagetwo" component={PageTwo} />
+  ```
+* `exact` keyword
+  - `extractedPath === path`
