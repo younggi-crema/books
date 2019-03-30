@@ -48,3 +48,10 @@
   ```
 * `exact` keyword
   - `extractedPath === path`
+
+## How to *Not* Navigate with React Router
+* anchor tag를 이용한 react router 간 이동
+  - **BAD!!**: 클릭하여 페이지 이동시 마다 페이지를 서버에서 받아와 이전 html을 없애고 새로 App을 로딩하게 됨
+  ```html
+  <a href='/'>Navigate to Page One</a>
+  ```

@@ -5,7 +5,12 @@ import { BrowserRouter, Route } from 'react-router-dom';
 
 // dummy components
 const PageOne = () => {
-  return <div>PageOne</div>;
+  return (
+    <div>
+      PageOne
+      <a href="/pagetwo">Navigate to Page Two</a>
+    </div>
+  );
 };
 
 const PageTwo = () => {
@@ -13,6 +18,7 @@ const PageTwo = () => {
     <div>
       PageTwo
       <button>Click Me!</button>
+      <a href="/">Navigate to Page One</a>
     </div>
   );
 };
