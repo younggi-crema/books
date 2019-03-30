@@ -23,3 +23,7 @@
   ```
   npm install --save react-router-dom
   ```
+
+## How React Router Works
+* React Router
+  ![React Router](./images/router.png)
