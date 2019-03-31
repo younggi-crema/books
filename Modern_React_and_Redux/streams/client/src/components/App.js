@@ -1,7 +1,7 @@
 import React from 'react';
 // import react-router
 // BrowserRouter: react component
-import { MemoryRouter, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Route, Link } from 'react-router-dom';
 
 // dummy components
 const PageOne = () => {
@@ -26,12 +26,12 @@ const PageTwo = () => {
 const App = () => {
   return (
     <div>
-      <MemoryRouter>
+      <BrowserRouter>
         <div>
           <Route path="/" exact component={PageOne} />
           <Route path="/pagetwo" component={PageTwo} />
         </div>
-      </MemoryRouter>
+      </BrowserRouter>
     </div>
   );
 };
