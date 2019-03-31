@@ -80,3 +80,11 @@
   - `BrowserRouter`: 모든 deploy 방식에서 일반적으로 지원
   - `HashRouter`: `#`는 client에서만 사용되므로, 서버에는 `localhost:3000`만 호출되고, 그 뒤의 url은 호출되지 않음, 별도의 server에 route 설정이 필요없음
   - `MemoryRouter`: 별도의 server에 route 설정이 필요없음
+
+## Component Scaffolding
+* path - React Components
+  - `/`: StreamList
+  - `/streams/new`: StreamCreate
+  - `/streams/edit`: StreamEdit
+  - `/streams/delete`: StreamDelete
+  - `/streams/show`: StreamShow
