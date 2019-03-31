@@ -89,5 +89,9 @@
   - `/streams/delete`: StreamDelete
   - `/streams/show`: StreamShow
 
-## Wiring Up Routes
-*
+## Always Visible Components
+* Components Hierachy
+  ![Components Hierachy](./images/hierachy.png)
+* Always Visible Components
+  - `Header`, `LoginButton` Components
+  - `BrowserRouter` 외부에 위치
