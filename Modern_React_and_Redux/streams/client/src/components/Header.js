@@ -12,7 +12,6 @@ const Header = () => {
           All Streams
         </Link>
       </div>
-      Header
     </div>
   );
 };

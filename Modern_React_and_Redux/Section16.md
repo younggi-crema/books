@@ -97,4 +97,9 @@
   - `BrowserRouter` 외부에 위치
 
 ## Connecting the Header
-* `You should not use <Link> outside a <Router>`
+* Add Link to Header
+  - `You should not use <Link> outside a <Router>`
+
+## Links inside Router
+* Header를 BrowserRouter 안으로 이동
+  ![Fixed Hierachy](./images/hierachy_fixed.png)
