@@ -95,3 +95,6 @@
 * Always Visible Components
   - `Header`, `LoginButton` Components
   - `BrowserRouter` 외부에 위치
+
+## Connecting the Header
+* `You should not use <Link> outside a <Router>`
