@@ -63,3 +63,9 @@
 * 동작 방식
   - html은 anchor tag로 rendering 되나, 클릭 시 React Router가 browser가 서버에 새로운 페이지를 호출하는 것을 막음
   - URL은 변경되나, `History`에서 update URL을 `BrowserRouter`로 보내어 해당하는 `Route` component를 실행하게 함
+
+## [Optional] - Different Route Types
+* Router types
+  - `BrowserRouter`: `localhost:3000/pagetwo` -> `/pagetwo`
+  - `HashRouter`: `localhost:3000/#/pagetwo` -> `/#/pagetwo`
+  - `MemoryRouter`: `localhost:3000` don't use URL to track navigation
