@@ -88,3 +88,6 @@
   - `/streams/edit`: StreamEdit
   - `/streams/delete`: StreamDelete
   - `/streams/show`: StreamShow
+
+## Wiring Up Routes
+*
