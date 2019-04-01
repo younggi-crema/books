@@ -28,7 +28,7 @@
 * React Router
   ![React Router](./images/router.png)
 
-## How Paths Get Matched
+## How Paths Get Matched [7ee6de07c6ad2baccd10266aa66ce60bedb62a08]
 * Path match 방식
   - path에 match하는 component는 모두 rendering 됨
   - `extractedPath.contains(path)`
@@ -49,14 +49,14 @@
 * `exact` keyword
   - `extractedPath === path`
 
-## How to *Not* Navigate with React Router
+## How to *Not* Navigate with React Router [3d0bfb804cfc85977fb9c9d3b31950b43075e03a]
 * anchor tag를 이용한 react router 간 이동
   - **BAD!!**: 클릭하여 페이지 이동시 마다 페이지를 서버에서 받아와 이전 html을 없애고 새로 App을 로딩하게 됨 (기존에 react가 가지고 있던 데이터는 모두 삭제됨)
   ```html
   <a href='/'>Navigate to Page One</a>
   ```
 
-## Navigating with React Router
+## Navigating with React Router [8a3d28187e4d630503781913974776b692504c26]
 * `Link`
   - html anchor tag 대신 React에서 사용
   - React App 내에서 route되고, 서버로 새로운 요청이 발생하지 않음
@@ -68,7 +68,9 @@
 * Router types
   - `BrowserRouter`: `localhost:3000/pagetwo` -> `/pagetwo`
   - `HashRouter`: `localhost:3000/#/pagetwo` -> `/#/pagetwo`
+    - [2cedb051378a3258f5cfed714dd1b6341b1e1c9b]
   - `MemoryRouter`: `localhost:3000` don't use URL to track navigation
+    - [be960ee397bd0c0337a907cc0d36a60c9a64bdd2]
 * Route Path가 없을 경우 서버 response
 * Traditional Web Application Server
   - route path를 찾지 못할 경우 404 Error를 return함
@@ -81,7 +83,7 @@
   - `HashRouter`: `#`는 client에서만 사용되므로, 서버에는 `localhost:3000`만 호출되고, 그 뒤의 url은 호출되지 않음, 별도의 server에 route 설정이 필요없음
   - `MemoryRouter`: 별도의 server에 route 설정이 필요없음
 
-## Component Scaffolding
+## Component Scaffolding [67ea06705035d1fb59432983f8e13e60e5a32548]
 * path - React Components
   - `/`: StreamList
   - `/streams/new`: StreamCreate
@@ -89,17 +91,17 @@
   - `/streams/delete`: StreamDelete
   - `/streams/show`: StreamShow
 
-## Always Visible Components
+## Always Visible Components [0161cb2159075803db5b1e6c4a4ec08e014e44c3]
 * Components Hierachy
   ![Components Hierachy](./images/hierachy.png)
 * Always Visible Components
   - `Header`, `LoginButton` Components
   - `BrowserRouter` 외부에 위치
 
-## Connecting the Header
+## Connecting the Header [65f0faf18577e7858030054add8eeb3816e92068]
 * Add Link to Header
   - `You should not use <Link> outside a <Router>`
 
-## Links inside Router
+## Links inside Router [d0e73313c516432d977b24648fea6460c85d1331]
 * Header를 BrowserRouter 안으로 이동
   ![Fixed Hierachy](./images/hierachy_fixed.png)
