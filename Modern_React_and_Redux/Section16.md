@@ -72,12 +72,12 @@
   - `MemoryRouter`: `localhost:3000` don't use URL to track navigation
     - [be960ee397bd0c0337a907cc0d36a60c9a64bdd2]
 * Route Path가 없을 경우 서버 response
-* Traditional Web Application Server
-  - route path를 찾지 못할 경우 404 Error를 return함
-* Create-React-App Dev Server (React App)
-  - route path가 resource와 public dir에 없으면 index.html를 일단 return함
-  - 모든 route path가 client에 로딩되는 js파일에 설정되어 있기 때문임
-  - server에서는 route path를 알지 못함
+  * Traditional Web Application Server
+    - route path를 찾지 못할 경우 404 Error를 return함
+  * Create-React-App Dev Server (React App)
+    - route path가 resource와 public dir에 없으면 index.html를 일단 return함
+    - 모든 route path가 client에 로딩되는 js파일에 설정되어 있기 때문임
+    - server에서는 route path를 알지 못함
 * App deploy 설정 관계
   - `BrowserRouter`: 모든 deploy 방식에서 일반적으로 지원
   - `HashRouter`: `#`는 client에서만 사용되므로, 서버에는 `localhost:3000`만 호출되고, 그 뒤의 url은 호출되지 않음, 별도의 server에 route 설정이 필요없음
