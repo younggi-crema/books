@@ -8,27 +8,28 @@
     - add new machine & auto scaling
   - Tons of Features
     - 다양한 Indexing 방법
-    - Aggregation pipeline
-    - Special collection types
-    - File storage (large file)
+    - Aggregation pipeline: 단순한 aggregations 들을 조합하여 복잡한 aggregation을 수행
+    - Special collection types: time-to-live collections, fixed-size collections 등 독특한 형태의 type들도 지원
+    - File storage (large file 지원)
   - Without Sacrificing Speed
+    - Mongo DB의 주요 목표
 
 # Chap 2. Getting Started
 * Basic concepts
   - `document`: basic unit of data
   - `collection`: table with dynamic schema
-  - single instance - multiple databases
+  - single instance - multiple databases 지원
   - `_id`: unique with in a collection
-  - javascript shell
+  - javascript shell 지원
 
 ## Documents
-* key - values: `{"greeting" : "Hello, world!", "foo": 3}`
+* 구조 (key - values): `{"greeting" : "Hello, world!", "foo": 3}`
   - key: string
   - value: string, integer ..
 * key name 유의점
   - key: `\0` (null) character가 없어야 함
   - key에서 `.`, `$`는 특수 용도로 예약되어 있음
-* Document 내 key value 특징
+* Document 내 key/value의 특징
   - type-sensitive
   - case-sensitive
   - key-value pairs are ordered
@@ -38,7 +39,8 @@
 
 ### Dynamic Schemas
 * 하나의 collection에 여러가지 형태의 documents가 저장될 수 있음
-* 같은 key의 경우 같은 type 이여야함
+* 같은 key의 경우 같은 type의 value이여야함
+  - Application 개발 시 같은 종류의 key에 다른 type의 value가 나올 경우 어렵고, 또한 속도에도 영향을 미침
 
 ### Naming
 * collection name 유의점
@@ -48,14 +50,14 @@
   - `$`는 예약어이므로 사용할 수 없음
 
 #### Subcollections
-* collection을 만드는 convention: namespaced subcollections
+* collection를 그룹핑하는 convention: namespaced subcollections
   - `.`로 분리됨: `blog.authors`, `blog.posts`
   - collection들을 organize 하는 용도외에는 다른 관계는 없음
 
 ## Databases
 * database: group of collections
   - own permissions
-  - disk에 별도로 분리된 파일로 저장되는 단위
+  - disk에 별도로 몇개의 분리된 파일로 저장됨
 * database name 유의점
   - empty string은 안됨
   - 다음 character는 포함될 수 없음: `/,\,/,",*,<,>,:,|,?,$, ,\0`
@@ -89,7 +91,7 @@
   ```
 
 ### A MongoDB Client
-* `db`: current database
+* `db`: current database 조회
 * `use foobar`: change database to foobar
 
 ### Basic Operations with the Shell
@@ -111,8 +113,8 @@
   ```
 
 #### Update
-* `update`: modify document
-  - first parameter: find which document
+* `update`: modify document (document 전체)
+  - first parameter: find which document (조건)
   - second parameter: new document
   ```
   > post.comments = []
@@ -159,7 +161,8 @@
 ### Embedded Documents
 * information을 좀 더 적절하게 표현 가능
   - person - address
-  ```
+  ```js
+  // person
   {
     "name": "John Doe",
     "address": {
@@ -203,7 +206,7 @@
   db.help()   // method help
   help admin  // administrative help
   ```
-* `db.foo.update`: print source code for the function
+* `db.foo.update`: update method의 source code를 출력
 
 ### Running Scripts with the Shell
 * run script files
@@ -213,7 +216,9 @@
   > load('script1.js')
   ```
 * javascript equivalents to shell helpers
-  - db: global variable
+  - db: global variable 임
+  - shell에서 function을 쉽게 사용하도록 helper 지원
+  - ex) `use db`
   ```
   use foo             db.getSisterDB("foo")
   show dbs            db.getMongo().getDBs()
@@ -272,7 +277,8 @@
 
 ### Inconvenient Collection Names
 * collection을 fetch 할 때 `db.collectionName` 방식으로 사용하게 되어, collection name이 db의 method의 name과 동일한 경우나, javascript property name("$", "_", letters, cannot start with number)으로 사용할 수 없는 형식일 경우 `getCollection` method를 사용해야 하므로 불편할 수 있음.
-  ```
+  ```js
+  // version 이라는 이름의 collection
   > db.version (x)
   > db.getCollection("version");
   ```
@@ -287,7 +293,7 @@
 
 ## Inserting and Saving Documents
 * insert
-  - `_id` key가 없을 경우 추가됨
+  - `_id` key가 별도로 지정하지 않을 경우 기본으로 추가됨
   ```js
   > db.foo.insert({"bar" : "baz"})
   ```
@@ -324,9 +330,24 @@
 
 ### Document Replacement
 * update 시 주의점
-  - update 조건 검색 시 `_id`가 duplicate 되는 경우 error 발생
+  - update 조건 검색 시 `_id`가 duplicate (document 내용이 `_id`를 제외하고 동일한 경우) 되는 경우 검색 결과 여러 건의 document를 하나의 id로 update하려고 하여 error 발생
+    ```js
+    > db.people.find()
+    {"_id" : ObjectId("4b2b9f67a1f631733d917a7b"), "name" : "joe", "age" : 65},
+    {"_id" : ObjectId("4b2b9f67a1f631733d917a7c"), "name" : "joe", "age" : 20},
+    {"_id" : ObjectId("4b2b9f67a1f631733d917a7d"), "name" : "joe", "age" : 49}
+    > joe = db.people.findOne({"name" : "joe", "age" : 20});
+    {
+        "_id" : ObjectId("4b2b9f67a1f631733d917a7c"),
+        "name" : "joe",
+        "age" : 20
+    }
+    > joe.age++;
+    > db.people.update({"name" : "joe"}, joe);
+    E11001 duplicate key on update
+    ```
   - `_id`를 criteria로 사용할 경우 index되어 있어 속도도 빠름
-* friends, enemies -> relationships
+* friends, enemies -> relationships로 document 구성을 변경하는 예제
   - before
   ```js
   {
@@ -446,6 +467,8 @@
           "$slice" : -10}}})
   ```
   - `$sort`: array의 element를 sort함
+    - 1: ascending order
+    - -1: descending order
   ```js
   > db.movies.find({"genre" : "horror"},
     {"$push" : {"top10" : {
@@ -454,7 +477,7 @@
         "$sort" : {"rating" : -1}}}})
   ```
 * Using arrays as sets
-  - `$addToSet`: array를 set과 같이 element가 없을 경우에만 추가
+  - `$addToSet`: array를 set과 같이 element가 없을 경우 추가
   ```js
   > db.papers.update({"authors cited" : {"$ne" : "Richie"}},
     {"$push" : {"author cited" : "Richie"}})
