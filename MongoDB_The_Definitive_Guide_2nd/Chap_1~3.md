@@ -23,7 +23,7 @@
   - javascript shell 지원
 
 ## Documents
-* 구조 (key - values): `{"greeting" : "Hello, world!", "foo": 3}`
+* ordered set (key - value): `{"greeting" : "Hello, world!", "foo": 3}`
   - key: string
   - value: string, integer ..
 * key name 유의점
@@ -46,7 +46,7 @@
 * collection name 유의점
   - empty string은 허용 안됨
   - `\0` (null) character는 포함되면 안됨
-  - `system`을 prefix는 내부용도로 사용되어 사용할 수 없음
+  - `system` prefix는 내부용도로 사용되어 사용할 수 없음
   - `$`는 예약어이므로 사용할 수 없음
 
 #### Subcollections
@@ -113,7 +113,7 @@
   ```
 
 #### Update
-* `update`: modify document (document 전체)
+* `update`: modify document (document 단위)
   - first parameter: find which document (조건)
   - second parameter: new document
   ```
@@ -436,7 +436,7 @@
   - `$push`: Array에 element를 추가함
   ```js
   > db.blog.posts.update({"title" : "A blog post"},
-    {"push" : {"comments" :
+    {"$push" : {"comments" :
         {"name" : "joe", "email" : "joe@example.com",
         "content" : "nice post."}}})
   > db.blog.posts.findOne()
@@ -532,7 +532,7 @@
   ```js
   db.analytics.update({"url" : "/blog"}, {"$inc" : {"pageviews" : 1}}, true)
   ```
-* `$setOnInsert`: docuement가 insert 될 때에만 저장됨
+* `$setOnInsert`: document가 insert 될 때에만 저장됨
   ```js
   > db.users.update({}, {"$setOnInsert" : {"createdAt" : new Date()}}, true)
   ```
