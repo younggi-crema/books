@@ -1,0 +1,21 @@
+{
+  "type": "apply",
+  "operator": {
+    "type": "word",
+    "name": "if"
+  },
+  "args": [
+    {
+      "type": "word",
+      "name": "true"
+    },
+    {
+      "type": "word",
+      "name": "false"
+    },
+    {
+      "type": "word",
+      "name": "true"
+    }
+  ]
+}

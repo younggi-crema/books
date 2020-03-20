@@ -1,0 +1,74 @@
+{
+	"type": "apply",
+	"operator": {
+		"type": "word",
+		"name": "do"
+	},
+	"args": [
+		{
+			"type": "apply",
+			"operator": {
+				"type": "word",
+				"name": "define"
+			},
+			"args": [
+				{
+					"type": "word",
+					"name": "plusOne"
+				},
+				{
+					"type": "apply",
+					"operator": {
+						"type": "word",
+						"name": "fun"
+					},
+					"args": [
+						{
+							"type": "word",
+							"name": "a"
+						},
+						{
+							"type": "apply",
+							"operator": {
+								"type": "word",
+								"name": "+"
+							},
+							"args": [
+								{
+									"type": "word",
+									"name": "a"
+								},
+								{
+									"type": "value",
+									"value": 1
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "apply",
+			"operator": {
+				"type": "word",
+				"name": "print"
+			},
+			"args": [
+				{
+					"type": "apply",
+					"operator": {
+						"type": "word",
+						"name": "plusOne"
+					},
+					"args": [
+						{
+							"type": "value",
+							"value": 10
+						}
+					]
+				}
+			]
+		}
+	]
+}

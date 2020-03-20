@@ -1,0 +1,151 @@
+{
+  "type": "apply",
+  "operator": {
+    "type": "word",
+    "name": "do"
+  },
+  "args": [
+    {
+      "type": "apply",
+      "operator": {
+        "type": "word",
+        "name": "define"
+      },
+      "args": [
+        {
+          "type": "word",
+          "name": "total"
+        },
+        {
+          "type": "value",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "type": "apply",
+      "operator": {
+        "type": "word",
+        "name": "define"
+      },
+      "args": [
+        {
+          "type": "word",
+          "name": "count"
+        },
+        {
+          "type": "value",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "type": "apply",
+      "operator": {
+        "type": "word",
+        "name": "while"
+      },
+      "args": [
+        {
+          "type": "apply",
+          "operator": {
+            "type": "word",
+            "name": "<"
+          },
+          "args": [
+            {
+              "type": "word",
+              "name": "count"
+            },
+            {
+              "type": "value",
+              "value": 11
+            }
+          ]
+        },
+        {
+          "type": "apply",
+          "operator": {
+            "type": "word",
+            "name": "do"
+          },
+          "args": [
+            {
+              "type": "apply",
+              "operator": {
+                "type": "word",
+                "name": "define"
+              },
+              "args": [
+                {
+                  "type": "word",
+                  "name": "total"
+                },
+                {
+                  "type": "apply",
+                  "operator": {
+                    "type": "word",
+                    "name": "+"
+                  },
+                  "args": [
+                    {
+                      "type": "word",
+                      "name": "total"
+                    },
+                    {
+                      "type": "word",
+                      "name": "count"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "apply",
+              "operator": {
+                "type": "word",
+                "name": "define"
+              },
+              "args": [
+                {
+                  "type": "word",
+                  "name": "count"
+                },
+                {
+                  "type": "apply",
+                  "operator": {
+                    "type": "word",
+                    "name": "+"
+                  },
+                  "args": [
+                    {
+                      "type": "word",
+                      "name": "count"
+                    },
+                    {
+                      "type": "value",
+                      "value": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "apply",
+      "operator": {
+        "type": "word",
+        "name": "print"
+      },
+      "args": [
+        {
+          "type": "word",
+          "name": "total"
+        }
+      ]
+    }
+  ]
+}
